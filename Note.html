@@ -1,0 +1,829 @@
+<html>
+  <head>
+    <base href="https://websim.ia/" />
+    <title>Plateforme avec IA intégrée</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root {
+        --primary: #003366;
+        --secondary: #a8d5ba;
+        --light: #e0e0e0;
+        --text: #333333;
+        --white: #ffffff;
+        --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+      }
+
+      body {
+        min-height: 100vh;
+        background: var(--light);
+        display: flex;
+      }
+
+      .sidebar {
+        width: 250px;
+        background: var(--primary);
+        padding: 2rem;
+        height: 100vh;
+        position: fixed;
+        color: var(--white);
+        transition: transform 0.3s ease;
+      }
+
+      .sidebar-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 2rem;
+        gap: 1rem;
+      }
+
+      .logo {
+        width: 40px;
+        height: 40px;
+      }
+
+      .nav-link {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        color: var(--white);
+        text-decoration: none;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+        transition: 0.3s;
+        gap: 1rem;
+      }
+
+      .nav-link:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .nav-link.active {
+        background: var(--secondary);
+        color: var(--primary);
+      }
+
+      .main-content {
+        margin-left: 250px;
+        flex: 1;
+        padding: 2rem;
+      }
+
+      .page-section {
+        background: var(--white);
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: var(--shadow);
+        margin-bottom: 1rem;
+        display: none;
+      }
+
+      .page-section.active {
+        display: block;
+      }
+
+      .input-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .input-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--text);
+      }
+
+      .input-field {
+        width: 100%;
+        padding: 0.8rem;
+        border: 2px solid var(--light);
+        border-radius: 8px;
+        outline: none;
+        transition: 0.3s;
+      }
+
+      .input-field:focus {
+        border-color: var(--secondary);
+      }
+
+      .btn {
+        padding: 0.8rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        background: var(--primary);
+        color: var(--white);
+        cursor: pointer;
+        transition: 0.3s;
+      }
+
+      .btn:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+      }
+
+      .notes-list,
+      .schedule-list {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .note-card {
+        background: var(--white);
+        padding: 1rem;
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+        border-left: 4px solid var(--secondary);
+        transition: all 0.3s ease;
+      }
+
+      .note-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+      }
+
+      .note-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+      }
+
+      .btn-edit {
+        background: var(--secondary);
+        color: var(--primary);
+      }
+
+      .btn-delete {
+        background: #dc3545;
+      }
+
+      .chat-container {
+        height: 400px;
+        overflow-y: auto;
+        padding: 1rem;
+        background: var(--light);
+        border-radius: 8px;
+        margin-bottom: 1rem;
+      }
+
+      .message {
+        max-width: 80%;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border-radius: 8px;
+      }
+
+      .user-message {
+        background: var(--primary);
+        color: var(--white);
+        margin-left: auto;
+      }
+
+      .ai-message {
+        background: var(--white);
+        margin-right: auto;
+      }
+
+      .ai-suggestions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+      }
+
+      .suggestion-chip {
+        padding: 0.5rem 1rem;
+        background: var(--light);
+        border-radius: 20px;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+
+      .suggestion-chip:hover {
+        background: var(--secondary);
+      }
+
+      .note-editor {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 1rem;
+      }
+
+      .formatting-toolbar {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        padding: 5px;
+        background: #f5f5f5;
+        border-radius: 4px;
+      }
+
+      .format-btn {
+        padding: 5px 10px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        border-radius: 4px;
+        color: var(--text);
+      }
+
+      .format-btn:hover {
+        background: var(--secondary);
+        color: var(--primary);
+      }
+
+      .bullet-note {
+        padding-left: 20px;
+        position: relative;
+      }
+
+      .bullet-note::before {
+        content: '°';
+        position: absolute;
+        left: 5px;
+      }
+
+      @media (max-width: 768px) {
+        .sidebar {
+          transform: translateX(-100%);
+          z-index: 1000;
+        }
+
+        .sidebar.active {
+          transform: translateX(0);
+        }
+
+        .main-content {
+          margin-left: 0;
+        }
+
+        .menu-toggle {
+          display: block;
+          position: fixed;
+          top: 1rem;
+          left: 1rem;
+          z-index: 1001;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="sidebar">
+      <div class="sidebar-header">
+        <svg class="logo" viewBox="0 0 24 24">
+          <path
+            fill="currentColor"
+            d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M12,6A6,6 0 0,1 18,12A6,6 0 0,1 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6"
+          />
+        </svg>
+        <h1>WebSim.IA</h1>
+      </div>
+
+      <a
+        href="#notes"
+        class="nav-link"
+        onclick="showPage('notes')"
+        id="notes-link"
+      >
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <path
+            fill="currentColor"
+            d="M14,10H19.5L14,4.5V10M5,3H15L21,9V19A2,2 0 0,1 19,21H5C3.89,21 3,20.1 3,19V5C3,3.89 3.89,3 5,3M5,5V19H19V12H13V5H5Z"
+          />
+        </svg>
+        Notes
+      </a>
+
+      <a
+        href="#calendar"
+        class="nav-link"
+        onclick="showPage('schedule')"
+        id="schedule-link"
+      >
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <path
+            fill="currentColor"
+            d="M19,19H5V8H19M16,1V3H8V1H6V3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3H18V1"
+          />
+        </svg>
+        Calendrier
+      </a>
+
+      <a href="#ai" class="nav-link" onclick="showPage('ai')" id="ai-link">
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <path
+            fill="currentColor"
+            d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4"
+          />
+        </svg>
+        Assistant IA
+      </a>
+    </nav>
+
+    <main class="main-content">
+      <section id="notes-page" class="page-section">
+        <h2>Mes Notes</h2>
+        <div class="input-group">
+          <label>Nouvelle note</label>
+          <div class="note-editor">
+            <div class="formatting-toolbar">
+              <button class="format-btn" onclick="formatText('bold')">B</button>
+              <button class="format-btn" onclick="formatText('italic')">
+                <i>I</i>
+              </button>
+              <button class="format-btn" onclick="formatText('underline')">
+                <u>U</u>
+              </button>
+              <button class="format-btn" onclick="addBullet()">°</button>
+            </div>
+            <div
+              id="note-input"
+              class="input-field"
+              contenteditable="true"
+              style="min-height: 150px; background: white"
+            ></div>
+            <button class="btn" onclick="saveNote()">Sauvegarder</button>
+          </div>
+        </div>
+        <div class="notes-list" id="notes-container"></div>
+      </section>
+
+      <section id="schedule-page" class="page-section">
+        <h2>Calendrier</h2>
+        <div class="input-group">
+          <label>Nouvel événement</label>
+          <input type="datetime-local" class="input-field" id="event-date" />
+          <input
+            type="text"
+            class="input-field"
+            id="event-title"
+            placeholder="Titre de l'événement"
+          />
+          <button class="btn" onclick="saveEvent()">Ajouter</button>
+        </div>
+        <div class="schedule-list" id="schedule-container"></div>
+      </section>
+
+      <section id="ai-page" class="page-section">
+        <h2>Assistant IA</h2>
+        <div class="ai-suggestions">
+          <span
+            class="suggestion-chip"
+            onclick="useAISuggestion('Aide aux devoirs')"
+            >Aide aux devoirs</span
+          >
+          <span class="suggestion-chip" onclick="useAISuggestion('Révisions')"
+            >Révisions</span
+          >
+          <span
+            class="suggestion-chip"
+            onclick="useAISuggestion('Organisation des notes')"
+            >Organisation des notes</span
+          >
+          <span
+            class="suggestion-chip"
+            onclick="useAISuggestion('Gestion du temps')"
+            >Gestion du temps</span
+          >
+          <span
+            class="suggestion-chip"
+            onclick="useAISuggestion('Méthodologie')"
+            >Méthodologie</span
+          >
+        </div>
+        <div style="text-align: right; margin-bottom: 10px">
+          <button class="btn btn-delete" onclick="clearConversation()">
+            Effacer la discussion
+          </button>
+        </div>
+        <div class="chat-container" id="chat-container"></div>
+        <div class="input-group">
+          <textarea
+            class="input-field"
+            id="ai-input"
+            placeholder="Posez votre question..."
+          ></textarea>
+          <button class="btn" onclick="sendMessage()">Envoyer</button>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      let currentPage = 'notes'
+      let notes = []
+      let events = []
+      let conversations = []
+
+      document.addEventListener('DOMContentLoaded', () => {
+        loadFromLocalStorage()
+        showPage('notes')
+      })
+
+      function loadFromLocalStorage() {
+        notes = JSON.parse(localStorage.getItem('notes') || '[]')
+        events = JSON.parse(localStorage.getItem('events') || '[]')
+        conversations = JSON.parse(
+          localStorage.getItem('conversations') || '[]'
+        )
+
+        renderNotes()
+        renderEvents()
+        renderConversation()
+      }
+
+      function showPage(page) {
+        currentPage = page
+        document.querySelectorAll('.page-section').forEach((section) => {
+          section.style.display = 'none'
+        })
+        document.querySelectorAll('.nav-link').forEach((link) => {
+          link.classList.remove('active')
+        })
+
+        document.getElementById(`${page}-page`).style.display = 'block'
+        document.getElementById(`${page}-link`).classList.add('active')
+      }
+
+      function saveNote() {
+        const input = document.getElementById('note-input')
+        const text = input.innerHTML.trim()
+
+        if (text) {
+          notes.unshift({
+            id: Date.now(),
+            text,
+            date: new Date().toISOString(),
+          })
+
+          localStorage.setItem('notes', JSON.stringify(notes))
+          input.innerHTML = ''
+          renderNotes()
+        }
+      }
+
+      function formatText(style) {
+        document.execCommand(style, false, null)
+        document.getElementById('note-input').focus()
+      }
+
+      function addBullet() {
+        const selection = window.getSelection()
+        const range = selection.getRangeAt(0)
+        const bullet = document.createElement('div')
+        bullet.className = 'bullet-note'
+        bullet.textContent = ' ' // Space for cursor
+        range.insertNode(bullet)
+
+        // Place cursor inside bullet point
+        range.setStart(bullet, 0)
+        range.setEnd(bullet, 0)
+        selection.removeAllRanges()
+        selection.addRange(range)
+        document.getElementById('note-input').focus()
+      }
+
+      function editNote(id) {
+        const note = notes.find((n) => n.id === id)
+        if (note) {
+          const input = document.getElementById('note-input')
+          input.innerHTML = note.text
+
+          notes = notes.filter((n) => n.id !== id)
+
+          input.scrollIntoView({ behavior: 'smooth' })
+          input.focus()
+        }
+      }
+
+      function renderNotes() {
+        const container = document.getElementById('notes-container')
+        container.innerHTML = notes
+          .map(
+            (note) => `
+      <div class="note-card">
+        <div>${note.text}</div>
+        <small>${new Date(note.date).toLocaleString()}</small>
+        <div class="note-actions">
+          <button class="btn btn-edit" onclick="editNote(${
+            note.id
+          })">Modifier</button>
+          <button class="btn btn-delete" onclick="deleteNote(${
+            note.id
+          })">Supprimer</button>
+        </div>
+      </div>
+    `
+          )
+          .join('')
+      }
+
+      function deleteNote(id) {
+        notes = notes.filter((note) => note.id !== id)
+        localStorage.setItem('notes', JSON.stringify(notes))
+        renderNotes()
+      }
+
+      function saveEvent() {
+        const dateInput = document.getElementById('event-date')
+        const titleInput = document.getElementById('event-title')
+
+        if (dateInput.value && titleInput.value.trim()) {
+          events.push({
+            id: Date.now(),
+            date: dateInput.value,
+            title: titleInput.value.trim(),
+          })
+
+          localStorage.setItem('events', JSON.stringify(events))
+          dateInput.value = ''
+          titleInput.value = ''
+          renderEvents()
+        }
+      }
+
+      function renderEvents() {
+        const container = document.getElementById('schedule-container')
+        container.innerHTML = events
+          .sort((a, b) => new Date(a.date) - new Date(b.date))
+          .map(
+            (event) => `
+        <div class="note-card">
+          <h3>${event.title}</h3>
+          <p>${new Date(event.date).toLocaleString()}</p>
+          <button class="btn" onclick="deleteEvent(${
+            event.id
+          })">Supprimer</button>
+        </div>
+      `
+          )
+          .join('')
+      }
+
+      function deleteEvent(id) {
+        events = events.filter((event) => event.id !== id)
+        localStorage.setItem('events', JSON.stringify(events))
+        renderEvents()
+      }
+
+      function useAISuggestion(suggestion) {
+        document.getElementById('ai-input').value = suggestion
+        sendMessage()
+      }
+
+      async function sendMessage() {
+        const input = document.getElementById('ai-input')
+        const message = input.value.trim()
+
+        if (message) {
+          conversations.push({
+            type: 'user',
+            text: message,
+          })
+          renderConversation()
+
+          conversations.push({
+            type: 'ai',
+            text: '...',
+          })
+          renderConversation()
+
+          const aiResponse = await generateAIResponse(message)
+
+          conversations.pop()
+          conversations.push({
+            type: 'ai',
+            text: aiResponse,
+          })
+
+          localStorage.setItem('conversations', JSON.stringify(conversations))
+          renderConversation()
+          input.value = ''
+        }
+      }
+
+      function renderConversation() {
+        const container = document.getElementById('chat-container')
+        container.innerHTML = conversations
+          .map(
+            (msg) => `
+      <div class="message ${msg.type}-message">
+        ${msg.text}
+      </div>
+    `
+          )
+          .join('')
+        container.scrollTop = container.scrollHeight
+      }
+
+      function clearConversation() {
+        if (confirm('Voulez-vous vraiment effacer toute la discussion ?')) {
+          conversations = []
+          localStorage.setItem('conversations', JSON.stringify(conversations))
+          renderConversation()
+        }
+      }
+
+      function generateAIResponse(message) {
+        const msg = message.toLowerCase()
+
+        if (
+          msg.includes('devoir') ||
+          msg.includes('exercice') ||
+          msg.includes('cours')
+        ) {
+          return processHomeworkQuery(msg)
+        } else if (
+          msg.includes('révision') ||
+          msg.includes('revision') ||
+          msg.includes('étude') ||
+          msg.includes('etude')
+        ) {
+          return processStudyMethodology(msg)
+        } else if (msg.includes('note')) {
+          return processNoteRelatedQuery(msg)
+        } else if (
+          msg.includes('temps') ||
+          msg.includes('calendrier') ||
+          msg.includes('planning')
+        ) {
+          return processTimeRelatedQuery(msg)
+        } else if (msg.includes('productiv') || msg.includes('efficac')) {
+          return processProductivityQuery(msg)
+        } else if (msg.includes('aide') || msg.includes('help')) {
+          return getHelpResponse()
+        } else if (msg.includes('bonjour') || msg.includes('salut')) {
+          return getGreetingResponse()
+        }
+
+        return getGeneralResponse(msg)
+      }
+
+      function processHomeworkQuery(msg) {
+        if (msg.includes('math')) {
+          return [
+            'Je peux vous aider en mathématiques :',
+            '• Explications pas à pas des concepts',
+            '• Aide à la résolution de problèmes',
+            '• Vérification des calculs',
+            '• Exercices pratiques',
+            '',
+            "Quel type d'exercice mathématique voulez-vous aborder ?",
+          ].join('\n')
+        }
+
+        if (msg.includes('français') || msg.includes('francais')) {
+          return [
+            'Aide en français :',
+            '• Analyse de texte',
+            '• Grammaire et conjugaison',
+            '• Structure de dissertation',
+            '• Méthodologie de commentaire',
+            '',
+            'Sur quel aspect souhaitez-vous travailler ?',
+          ].join('\n')
+        }
+
+        if (msg.includes('anglais')) {
+          return [
+            'Support en anglais :',
+            '• Vocabulaire et expressions',
+            '• Grammaire anglaise',
+            '• Compréhension de texte',
+            '• Exercices de conversation',
+            '',
+            'What would you like to practice?',
+          ].join('\n')
+        }
+
+        return [
+          'Je peux vous aider dans plusieurs matières :',
+          '• Mathématiques',
+          '• Français',
+          '• Anglais',
+          '• Sciences',
+          '• Histoire-Géographie',
+          '',
+          "Dans quelle matière avez-vous besoin d'aide ?",
+        ].join('\n')
+      }
+
+      function processStudyMethodology(msg) {
+        return [
+          'Conseils pour des révisions efficaces :',
+          '• Créez un planning de révision',
+          '• Utilisez la technique des flashcards',
+          '• Faites des mini-tests réguliers',
+          '• Alternez les matières',
+          '• Prenez des pauses actives',
+          '• Utilisez des moyens mnémotechniques',
+          '',
+          "Voulez-vous des détails sur l'une de ces méthodes ?",
+        ].join('\n')
+      }
+
+      function processNoteRelatedQuery(msg) {
+        const suggestions = [
+          'Voici quelques conseils pour organiser vos notes :',
+          '• Créez des catégories thématiques pour vos notes',
+          '• Utilisez des tags pour faciliter la recherche',
+          '• Faites des révisions régulières de vos notes',
+          '• Privilégiez la qualité à la quantité',
+          '• Utilisez des listes à puces pour plus de clarté',
+          '',
+          'Voulez-vous que je vous aide à organiser une note spécifique ?',
+        ].join('\n')
+
+        if (msg.includes('organis')) {
+          return suggestions
+        } else if (msg.includes('recherch')) {
+          return 'Je peux vous aider à retrouver vos notes. Utilisez des mots-clés spécifiques ou indiquez une date pour affiner la recherche.'
+        }
+
+        return suggestions
+      }
+
+      function processTimeRelatedQuery(msg) {
+        if (msg.includes('planif')) {
+          return [
+            'Pour une planification efficace :',
+            '• Définissez vos priorités',
+            '• Utilisez la technique des blocs de temps',
+            '• Prévoyez des marges pour les imprévus',
+            '• Synchronisez avec votre calendrier',
+            '',
+            'Je peux vous aider à organiser votre emploi du temps. Que souhaitez-vous planifier ?',
+          ].join('\n')
+        }
+
+        return [
+          'Conseils de gestion du temps :',
+          '• Méthode Pomodoro (25min travail/5min pause)',
+          "• Matrice d'Eisenhower pour les priorités",
+          '• Planning hebdomadaire le dimanche soir',
+          '• Objectifs quotidiens limités à 3-5 tâches importantes',
+          '',
+          'Quelle technique voulez-vous approfondir ?',
+        ].join('\n')
+      }
+
+      function processProductivityQuery(msg) {
+        return [
+          'Améliorez votre productivité avec ces techniques :',
+          '• La règle des 2 minutes',
+          '• La méthode GTD (Getting Things Done)',
+          '• Les rituels quotidiens',
+          '• La technique du timeboxing',
+          "• L'élimination des distractions",
+          '',
+          "Souhaitez-vous des détails sur l'une de ces méthodes ?",
+        ].join('\n')
+      }
+
+      function getHelpResponse() {
+        return [
+          'Je peux vous aider avec :',
+          '• Vos devoirs et exercices',
+          '• Les révisions et la méthodologie',
+          '• La gestion de vos notes',
+          "• L'organisation de votre temps",
+          "• L'amélioration de votre productivité",
+          '• Des conseils personnalisés par matière',
+          '',
+          'Quel aspect souhaitez-vous explorer ?',
+        ].join('\n')
+      }
+
+      function getGreetingResponse() {
+        const greetings = [
+          "Bonjour ! Comment puis-je vous aider aujourd'hui ?",
+          'Salut ! Je suis là pour vous assister. Que puis-je faire pour vous ?',
+          'Bienvenue ! En quoi puis-je vous être utile ?',
+        ]
+        return greetings[Math.floor(Math.random() * greetings.length)]
+      }
+
+      function getGeneralResponse(msg) {
+        if (msg.length < 10) {
+          return "Pourriez-vous m'en dire plus sur ce dont vous avez besoin ? Je suis là pour vous aider avec la gestion des notes, du temps et de la productivité."
+        }
+
+        return [
+          'Je comprends votre demande. Voici ce que je peux vous proposer :',
+          "• Des conseils personnalisés sur l'organisation",
+          '• Des techniques de productivité',
+          '• Des méthodes de gestion du temps',
+          '',
+          'Quel aspect vous intéresse le plus ?',
+        ].join('\n')
+      }
+    </script>
+  </body>
+</html>
